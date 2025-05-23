@@ -39,6 +39,8 @@ model Subscription {
   userId    Int
   message   String?
   createdAt DateTime @default(now())
+
+  @@unique([eventId, userId], name: "eventId_userId")
 }
 
 enum Role {

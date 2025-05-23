@@ -214,3 +214,37 @@ export const listMyEvents: RequestHandler = async (req, res, next) => {
     next(err);
   }
 };
+
+export const subscribeEvent: RequestHandler = async (req, res, next) => {
+  try {
+    const eventId = Number(req.params.id);
+    const userId = (req as any).user.userId;
+
+    // 1) Verifica se o evento existe
+    const event = await prisma.event.findUnique({ where: { id: eventId } });
+    if (!event) {
+      res.status(404).json({ message: 'Evento não encontrado.' });
+      return;
+    }
+
+    // 2) Checa inscrição duplicada
+    const already = await prisma.subscription.findUnique({
+      where: {
+        eventId_userId: { eventId, userId }
+      }
+    });
+    if (already) {
+      res.status(400).json({ message: 'Você já está inscrito neste evento.' });
+      return;
+    }
+
+    // 3) Cria a inscrição
+    const subscription = await prisma.subscription.create({
+      data: { eventId, userId }
+    });
+
+    res.status(201).json(subscription);
+  } catch (err) {
+    next(err);
+  }
+};

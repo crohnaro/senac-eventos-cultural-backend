@@ -8,7 +8,8 @@ import {
   createEvent,
   updateEvent,
   deleteEvent,
-  listMyEvents
+  listMyEvents,
+  subscribeEvent
 } from '../controllers/events.controller';
 
 const router = Router();
@@ -30,6 +31,13 @@ router.get(
   ensureAuth,
   ensureRole('ORGANIZER'),
   listMyEvents
+);
+
+router.post(
+  '/:id/subscribe',
+  ensureAuth,
+  ensureRole('PARTICIPANT'),
+  subscribeEvent
 );
 
 router.get('/:id', getEvent);
