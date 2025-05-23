@@ -15,8 +15,6 @@ const router = Router();
 
 // Rotas abertas
 router.get('/', listEvents);
-router.get('/:id', getEvent);
-
 
 // Rotas protegidas (apenas ORGANIZER)
 router.post(
@@ -33,6 +31,8 @@ router.get(
   ensureRole('ORGANIZER'),
   listMyEvents
 );
+
+router.get('/:id', getEvent);
 
 router.put(
   '/:id',
