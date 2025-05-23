@@ -46,17 +46,37 @@ export const createEvent: RequestHandler = async (req, res, next) => {
 
 export const updateEvent: RequestHandler = async (req, res, next) => {
   try {
-    const { id } = req.params;
-    const data: any = { ...req.body };
+    const id = Number(req.params.id);
 
-    // Se veio nova imagem, faz upload e atualiza bannerUrl
-    if (req.file) {
-      data.bannerUrl = await uploadToCloudinary(req.file.buffer);
+    // 1) Extrair apenas os campos válidos do corpo
+    const { title, description, location, price } = req.body;
+
+    // 2) Montar o objeto de atualização
+    const updateData: any = {
+      title,
+      description,
+      location,
+    };
+
+    // Só define price se vier no body e for um número válido
+    if (price !== undefined) {
+      const parsed = Number(price);
+      if (isNaN(parsed)) {
+        res.status(400).json({ message: 'O campo price deve ser um número.' });
+        return;
+      }
+      updateData.price = parsed;
     }
 
+    // 3) Se veio arquivo novo, faz upload e atualiza bannerUrl
+    if (req.file) {
+      updateData.bannerUrl = await uploadToCloudinary(req.file.buffer);
+    }
+
+    // 4) Executa o update no Prisma
     const event = await prisma.event.update({
-      where: { id: Number(id) },
-      data
+      where: { id },
+      data: updateData,
     });
 
     res.json(event);
@@ -154,10 +174,10 @@ export const deleteEvent: RequestHandler = async (req, res, next) => {
     // (Opcional) Verificar se o organizador é o mesmo que faz a requisição:
     const organizerId = (req as any).user.userId;
     const e = await prisma.event.findUnique({ where: { id } });
-        if (!e || e.organizerId !== organizerId) {
-            res.status(403).json({ message: 'Permissão negada.' });
-            return;
-        }
+    if (!e || e.organizerId !== organizerId) {
+      res.status(403).json({ message: 'Permissão negada.' });
+      return;
+    }
 
     await prisma.event.delete({ where: { id } });
     res.status(204).send();
