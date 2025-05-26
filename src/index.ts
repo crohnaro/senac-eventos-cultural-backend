@@ -5,6 +5,7 @@ import dotenv from 'dotenv';
 import prisma from './services/prisma';
 import authRoutes from './routes/auth.routes';
 import eventRoutes from './routes/events.routes';
+import subscriptionRoutes from './routes/subscription.route';
 
 dotenv.config();
 const app = express();
@@ -14,6 +15,7 @@ app.use(cors());
 app.use(express.json());
 app.use('/auth', authRoutes);
 app.use('/events', eventRoutes);
+app.use('/subscriptions', subscriptionRoutes);
 
 app.get('/', (req, res) => {
   res.send('Senac Eventos Cultural API rodando 🚀');
@@ -25,11 +27,11 @@ app.listen(PORT, () => {
 
 // logo após app.listen(...)
 async function testDatabaseConnection() {
-    try {
-      const users = await prisma.user.findMany();
-      console.log('Conexão com banco OK. Usuários:', users);
-    } catch (err) {
-      console.error('Erro ao conectar com o banco:', err);
-    }
+  try {
+    const users = await prisma.user.findMany();
+    console.log('Conexão com banco OK. Usuários:', users);
+  } catch (err) {
+    console.error('Erro ao conectar com o banco:', err);
+  }
 }
-  testDatabaseConnection();
+testDatabaseConnection();
