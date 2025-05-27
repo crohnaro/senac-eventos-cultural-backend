@@ -18,8 +18,6 @@ router.post(
 
 router.get(
     '/events/:id/subscriptions',
-    ensureAuth,
-    ensureRole('ORGANIZER'),
     listSubscriptionsForEvent
 );
 
