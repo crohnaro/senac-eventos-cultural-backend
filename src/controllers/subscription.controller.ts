@@ -44,44 +44,41 @@ export const createSubscription: RequestHandler = async (req, res, next) => {
  * GET /events/:id/subscriptions
  * Lista inscrições de um evento (organizador)
  */
+// src/controllers/subscription.controller.ts
+/**
+ * GET /events/:id/subscriptions
+ * Lista todos os participantes inscritos em um evento
+ */
 export const listSubscriptionsForEvent: RequestHandler = async (req, res, next) => {
     try {
         const eventId = Number(req.params.id);
-        const organizerId = (req as any).user.userId;
 
-        console.log('listSubscriptionsForEvent: eventId=', eventId, 'organizerId=', organizerId);
-
-        const event = await prisma.event.findUnique({ where: { id: eventId } });
-        console.log('listSubscriptionsForEvent: fetched event=', event);
-        if (!event) {
-            console.log('listSubscriptionsForEvent: no event found');
-            res.status(404).json({ message: 'Evento não encontrado.' });
-            return;
-        }
-        if (event.organizerId !== organizerId) {
-            console.log('listSubscriptionsForEvent: organizer mismatch: event.organizerId=', event.organizerId);
-            res.status(403).json({ message: 'Acesso negado.' });
-            return;
-        }
-
+        // Busca diretamente as inscrições, sem checar organizerId
         const subs = await prisma.subscription.findMany({
             where: { eventId },
-            include: { user: { select: { id: true, name: true, email: true } } },
+            include: {
+                user: {
+                    select: { id: true, name: true, email: true }
+                }
+            },
             orderBy: { createdAt: 'desc' }
         });
-        console.log('listSubscriptionsForEvent: fetched subscriptions count=', subs.length);
+
+        // Se quiser retornar 404 quando não houver inscrições:
+        // if (subs.length === 0) {
+        //   return res.status(404).json({ message: 'Nenhuma inscrição encontrada.' });
+        // }
 
         res.json(
             subs.map(s => ({
-                id: s.id,
+                subscriptionId: s.id,
                 userId: s.userId,
-                userName: s.user.name,
-                userEmail: s.user.email,
+                name: s.user.name,
+                email: s.user.email,
                 subscribedAt: s.createdAt
             }))
         );
     } catch (err) {
-        console.error('listSubscriptionsForEvent error:', err);
         next(err);
     }
 };
