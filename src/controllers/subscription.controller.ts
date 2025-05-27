@@ -54,7 +54,8 @@ export const listSubscriptionsForEvent: RequestHandler = async (req, res, next) 
         const eventId = Number(req.params.id);
 
         if (isNaN(eventId)) {
-            return res.status(400).json({ message: 'ID de evento inválido.' });
+            res.status(400).json({ message: 'ID de evento inválido.' });
+            return;
         }
 
         // Busca todas as subscriptions para esse eventId, trazendo o usuário completo
