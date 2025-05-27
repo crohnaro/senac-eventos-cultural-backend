@@ -53,33 +53,36 @@ export const listSubscriptionsForEvent: RequestHandler = async (req, res, next) 
     try {
         const eventId = Number(req.params.id);
 
-        // Busca diretamente as inscrições, sem checar organizerId
+        if (isNaN(eventId)) {
+            return res.status(400).json({ message: 'ID de evento inválido.' });
+        }
+
+        // Busca todas as subscriptions para esse eventId, trazendo o usuário completo
         const subs = await prisma.subscription.findMany({
             where: { eventId },
             include: {
                 user: {
-                    select: { id: true, name: true, email: true }
+                    select: {
+                        id: true,
+                        name: true,
+                        email: true,
+                        createdAt: true
+                    }
                 }
             },
-            orderBy: { createdAt: 'desc' }
+            orderBy: { createdAt: 'asc' }
         });
 
-        // Se quiser retornar 404 quando não houver inscrições:
-        if (subs.length === 0) {
-            res.status(404).json({ message: 'Nenhuma inscrição encontrada.' });
-            return;
-        }
+        // Formata a resposta: só os dados de usuário
+        const users = subs.map(s => ({
+            subscriptionId: s.id,
+            userId: s.user.id,
+            name: s.user.name,
+            email: s.user.email,
+            joinedAt: s.createdAt
+        }));
 
-        res.json(
-            subs.map(s => ({
-                subscriptionId: s.id,
-                userId: s.userId,
-                name: s.user.name,
-                email: s.user.email,
-                subscribedAt: s.createdAt
-            }))
-        );
-        return;
+        res.json(users);
     } catch (err) {
         next(err);
     }
