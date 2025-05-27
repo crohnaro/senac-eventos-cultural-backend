@@ -66,7 +66,8 @@ export const listSubscriptionsForEvent: RequestHandler = async (req, res, next) 
 
         // Se quiser retornar 404 quando não houver inscrições:
         if (subs.length === 0) {
-            return res.status(404).json({ message: 'Nenhuma inscrição encontrada.' });
+            res.status(404).json({ message: 'Nenhuma inscrição encontrada.' });
+            return;
         }
 
         res.json(
@@ -78,6 +79,7 @@ export const listSubscriptionsForEvent: RequestHandler = async (req, res, next) 
                 subscribedAt: s.createdAt
             }))
         );
+        return;
     } catch (err) {
         next(err);
     }
