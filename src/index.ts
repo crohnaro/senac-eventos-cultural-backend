@@ -15,7 +15,7 @@ app.use(cors());
 app.use(express.json());
 app.use('/auth', authRoutes);
 app.use('/events', eventRoutes);
-app.use('/subscriptions', subscriptionRoutes);
+app.use('/', subscriptionRoutes);
 
 app.get('/', (req, res) => {
   res.send('Senac Eventos Cultural API rodando 🚀');
